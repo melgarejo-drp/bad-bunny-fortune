@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐰 El Conejo te Habla</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0d0d0d;
+    --card-front: #111;
+    --card-back: #1a0a2e;
+    --accent: #c8ff00;
+    --pink: #ff2d78;
+    --text: #f0f0f0;
+    --dim: #444;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 40px;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 10vw, 80px);
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--accent), var(--pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .header p {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 3px;
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  /* Input */
+  .input-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .input-label {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 3px;
+    text-align: center;
+  }
+
+  textarea {
+    width: 100%;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    padding: 16px;
+    resize: none;
+    height: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea::placeholder {
+    color: #333;
+  }
+
+  .ask-btn {
+    background: var(--accent);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 14px 32px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+
+  .ask-btn:hover { opacity: 0.85; }
+  .ask-btn:active { transform: scale(0.97); }
+  .ask-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Card Scene */
+  .card-scene {
+    perspective: 1000px;
+    width: 340px;
+    height: 220px;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+  }
+
+  /* Frente de la carta */
+  .card-front {
+    background: linear-gradient(135deg, #1a0a2e, #0d0d1a);
+    border: 1px solid #2d1a4a;
+  }
+
+  .card-front-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .rabbit-emoji {
+    font-size: 52px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .card-front p {
+    font-size: 11px;
+    color: #554466;
+    letter-spacing: 3px;
+    text-align: center;
+  }
+
+  /* Atrás de la carta */
+  .card-back {
+    background: linear-gradient(135deg, #0d1a0d, #0a1a0a);
+    border: 1px solid #1a3a1a;
+    transform: rotateY(180deg);
+    text-align: center;
+    gap: 16px;
+  }
+
+  .card-back .quote {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(12px, 2.5vw, 15px);
+    line-height: 1.6;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .card-back .song {
+    font-size: 10px;
+    color: #446644;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .card-back .song span {
+    color: var(--pink);
+  }
+
+  /* Partículas / destellos */
+  .sparks {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  .spark {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: spark-anim 1s ease-out forwards;
+  }
+
+  @keyframes spark-anim {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+  }
+
+  /* Hint */
+  .hint {
+    font-size: 11px;
+    color: #2a2a2a;
+    letter-spacing: 2px;
+    text-align: center;
+  }
+
+  .hint.visible {
+    color: var(--dim);
+  }
+
+  /* Shake animation */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0) rotateY(0); }
+    25% { transform: translateX(-4px) rotateY(-3deg); }
+    75% { transform: translateX(4px) rotateY(3deg); }
+  }
+
+  .card.shaking {
+    animation: shake 0.4s ease-in-out;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>El Conejo<br>Te Habla</h1>
+  <p>🐰 · La fortuna según Bad Bunny · 🐰</p>
+</div>
+
+<div class="input-section">
+  <div class="input-label">¿Cuál es tu pregunta?</div>
+  <textarea id="question" placeholder="Escribe lo que tienes en mente..." maxlength="200"></textarea>
+  <button class="ask-btn" id="ask-btn" onclick="reveal()">Revelar mi destino</button>
+</div>
+
+<div class="card-scene">
+  <div class="card" id="card" onclick="flipBack()">
+    <div class="card-face card-front">
+      <div class="card-front-inner">
+        <div class="rabbit-emoji">🐰</div>
+        <p>ESCRIBE TU PREGUNTA<br>Y PRESIONA EL BOTÓN</p>
+      </div>
+    </div>
+    <div class="card-face card-back">
+      <div class="quote" id="quote-text"></div>
+      <div class="song" id="song-text"></div>
+    </div>
+  </div>
+</div>
+
+<div class="hint" id="hint">· toca la carta para voltearla de nuevo ·</div>
+
+<canvas class="sparks" id="sparks"></canvas>
+
+<script>
+  const fortunes = [
+    { quote: "Yo hago lo que me da la gana,\ny eso no lo cambia nada.", song: "Yo Perreo Sola", album: "YHLQMDLG (2020)" },
+    { quote: "Sigo siendo el mismo,\npero diferente.", song: "Tití Me Preguntó", album: "Un Verano Sin Ti (2022)" },
+    { quote: "El dinero no es todo,\npero ayuda a olvidar.", song: "Dinero", album: "X 100PRE (2018)" },
+    { quote: "No me busques mañana\nsi no me valoras hoy.", song: "Si Veo a Tu Mamá", album: "YHLQMDLG (2020)" },
+    { quote: "Los que me criticaron\nson los que más me escuchan.", song: "Mía", album: "X 100PRE (2018)" },
+    { quote: "A veces hay que perderse\npara encontrarse.", song: "Otro Atardecer", album: "Un Verano Sin Ti (2022)" },
+    { quote: "El tiempo lo cura todo,\npero lo mío no tiene cura.", song: "Callaíta", album: "Single (2019)" },
+    { quote: "Pa' las que sean,\npa' las que no sean también.", song: "Tití Me Preguntó", album: "Un Verano Sin Ti (2022)" },
+    { quote: "Prefiero estar solo\nque mal acompañado.", song: "Solo de Mí", album: "X 100PRE (2018)" },
+    { quote: "La vida es una sola,\ngózatela mientras puedas.", song: "La Canción", album: "con J Balvin (2019)" },
+    { quote: "No importa lo que digan,\nyo sé quién soy.", song: "Dakiti", album: "con Jhay Cortez (2020)" },
+    { quote: "El que espera,\ndespera.", song: "Neverita", album: "Un Verano Sin Ti (2022)" },
+    { quote: "A veces el silencio\ndice más que mil palabras.", song: "Un Verano Sin Ti", album: "Un Verano Sin Ti (2022)" },
+    { quote: "Las cosas buenas\nnecesitan tiempo.", song: "Me Porto Bonito", album: "Un Verano Sin Ti (2022)" },
+    { quote: "No todo el que brilla\nes oro, mi amor.", song: "Ojitos Lindos", album: "Un Verano Sin Ti (2022)" },
+    { quote: "Confía en tu instinto,\nél nunca miente.", song: "Moscow Mule", album: "Un Verano Sin Ti (2022)" },
+    { quote: "El camino difícil\nes el que vale la pena.", song: "Yonaguni", album: "Single (2021)" },
+    { quote: "Haz lo tuyo\nsin mirar pa' atrás.", song: "Safaera", album: "YHLQMDLG (2020)" },
+    { quote: "Quien te quiera de verdad\nte buscará aunque te escondas.", song: "Bichiyal", album: "YHLQMDLG (2020)" },
+    { quote: "El que no arriesga\nno gana.", song: "Chambea", album: "con J Balvin · Oasis (2019)" },
+    { quote: "Algunas puertas se cierran\npara que encuentres la correcta.", song: "Andrea", album: "Un Verano Sin Ti (2022)" },
+    { quote: "Lo que es tuyo\nllega sin forzarlo.", song: "Después de la Playa", album: "Un Verano Sin Ti (2022)" },
+    { quote: "Rodéate de quien\nte sume, no de quien te reste.", song: "Yo Visto Así", album: "Nadie Sabe Lo Que Va a Pasar Mañana (2023)" },
+    { quote: "A veces lo mejor\nes simplemente soltar.", song: "Coco Chanel", album: "Nadie Sabe Lo Que Va a Pasar Mañana (2023)" },
+    { quote: "El mundo cambia,\nadáptate o quédate atrás.", song: "WHERE SHE GOES", album: "Single (2023)" },
+  ];
+
+  let lastIndex = -1;
+  let isFlipped = false;
+
+  function reveal() {
+    const q = document.getElementById('question').value.trim();
+    if (!q) {
+      document.getElementById('question').focus();
+      document.getElementById('question').style.borderColor = '#ff2d78';
+      setTimeout(() => document.getElementById('question').style.borderColor = '#2a2a2a', 1000);
+      return;
+    }
+
+    const card = document.getElementById('card');
+    if (isFlipped) {
+      // Shake para indicar que ya está revelada
+      card.classList.add('shaking');
+      setTimeout(() => card.classList.remove('shaking'), 400);
+      return;
+    }
+
+    // Seleccionar frase aleatoria (sin repetir la anterior)
+    let idx;
+    do { idx = Math.floor(Math.random() * fortunes.length); } while (idx === lastIndex);
+    lastIndex = idx;
+    const fortune = fortunes[idx];
+
+    document.getElementById('quote-text').textContent = `"${fortune.quote}"`;
+    document.getElementById('song-text').innerHTML = `<span>${fortune.song}</span> · ${fortune.album}`;
+
+    card.classList.add('flipped');
+    isFlipped = true;
+
+    document.getElementById('hint').classList.add('visible');
+    document.getElementById('ask-btn').disabled = true;
+
+    // Sparks
+    launchSparks();
+  }
+
+  function flipBack() {
+    if (!isFlipped) return;
+    const card = document.getElementById('card');
+    card.classList.remove('flipped');
+    isFlipped = false;
+    document.getElementById('hint').classList.remove('visible');
+    document.getElementById('ask-btn').disabled = false;
+  }
+
+  function launchSparks() {
+    const canvas = document.getElementById('sparks');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#c8ff00', '#ff2d78', '#ffffff', '#aa88ff'];
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+
+    const particles = Array.from({ length: 40 }, () => ({
+      x: cx,
+      y: cy,
+      vx: (Math.random() - 0.5) * 12,
+      vy: (Math.random() - 0.5) * 12,
+      r: Math.random() * 4 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 1,
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      particles.forEach(p => {
+        if (p.life <= 0) return;
+        alive = true;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.3;
+        p.life -= 0.025;
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      if (alive) requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    draw();
+  }
+
+  // Enter en textarea
+  document.getElementById('question').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      reveal();
+    }
+  });
+</script>
+</body>
+</html>
