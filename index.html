@@ -11,10 +11,9 @@
 
   :root {
     --bg: #0d0d0d;
-    --card-front: #111;
-    --card-back: #1a0a2e;
     --accent: #c8ff00;
     --pink: #ff2d78;
+    --blue: #00cfff;
     --text: #f0f0f0;
     --dim: #444;
   }
@@ -29,15 +28,17 @@
     align-items: center;
     justify-content: center;
     padding: 40px 20px;
-    gap: 40px;
+    gap: 36px;
     overflow-x: hidden;
+    transition: background 0.6s;
   }
+
+  body.mood-good  { background: #0a1a00; }
+  body.mood-bad   { background: #0d0008; }
+  body.mood-neutral { background: #000d1a; }
 
   /* Header */
-  .header {
-    text-align: center;
-  }
-
+  .header { text-align: center; }
   .header h1 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(48px, 10vw, 80px);
@@ -48,210 +49,148 @@
     background-clip: text;
     line-height: 1;
   }
-
-  .header p {
-    font-size: 11px;
-    color: var(--dim);
-    letter-spacing: 3px;
-    margin-top: 8px;
-    text-transform: uppercase;
-  }
+  .header p { font-size: 11px; color: var(--dim); letter-spacing: 3px; margin-top: 8px; text-transform: uppercase; }
 
   /* Input */
   .input-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    width: 100%;
-    max-width: 500px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 14px; width: 100%; max-width: 500px;
   }
-
-  .input-label {
-    font-size: 11px;
-    color: var(--dim);
-    letter-spacing: 3px;
-    text-align: center;
-  }
+  .input-label { font-size: 11px; color: var(--dim); letter-spacing: 3px; text-align: center; }
 
   textarea {
-    width: 100%;
-    background: #111;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Space Mono', monospace;
-    font-size: 14px;
-    padding: 16px;
-    resize: none;
-    height: 80px;
-    outline: none;
+    width: 100%; background: #111; border: 1px solid #2a2a2a;
+    border-radius: 8px; color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 14px; padding: 16px; resize: none; height: 80px; outline: none;
     transition: border-color 0.2s;
   }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: #333; }
+  textarea:disabled { opacity: 0.4; }
 
-  textarea:focus {
-    border-color: var(--accent);
-  }
-
-  textarea::placeholder {
-    color: #333;
-  }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
   .ask-btn {
-    background: var(--accent);
-    color: #0d0d0d;
-    border: none;
-    border-radius: 6px;
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 14px 32px;
-    cursor: pointer;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    background: var(--accent); color: #0d0d0d;
+    border: none; border-radius: 6px; font-family: 'Space Mono', monospace;
+    font-size: 13px; font-weight: 700; padding: 14px 28px; cursor: pointer;
+    letter-spacing: 2px; text-transform: uppercase;
     transition: transform 0.15s, opacity 0.15s;
   }
-
   .ask-btn:hover { opacity: 0.85; }
   .ask-btn:active { transform: scale(0.97); }
-  .ask-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .ask-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 
-  /* Card Scene */
-  .card-scene {
-    perspective: 1000px;
-    width: 340px;
-    height: 220px;
+  .reset-btn {
+    background: transparent; color: var(--dim);
+    border: 1px solid #333; border-radius: 6px; font-family: 'Space Mono', monospace;
+    font-size: 12px; padding: 14px 24px; cursor: pointer;
+    letter-spacing: 2px; text-transform: uppercase;
+    transition: all 0.2s; display: none;
   }
+  .reset-btn:hover { border-color: var(--text); color: var(--text); }
+  .reset-btn.visible { display: block; }
+
+  /* Card */
+  .card-scene { perspective: 1000px; width: 340px; height: 230px; }
 
   .card {
-    width: 100%;
-    height: 100%;
-    position: relative;
+    width: 100%; height: 100%; position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
+    transition: transform 0.85s cubic-bezier(0.4, 0, 0.2, 1);
   }
-
-  .card.flipped {
-    transform: rotateY(180deg);
-  }
+  .card.flipped { transform: rotateY(180deg); }
 
   .card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 28px;
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden; border-radius: 16px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 28px;
   }
 
-  /* Frente de la carta */
   .card-front {
     background: linear-gradient(135deg, #1a0a2e, #0d0d1a);
     border: 1px solid #2d1a4a;
   }
+  .card-front-inner { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .rabbit-emoji { font-size: 52px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .card-front p { font-size: 11px; color: #554466; letter-spacing: 3px; text-align: center; }
 
-  .card-front-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .rabbit-emoji {
-    font-size: 52px;
-    animation: float 3s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-
-  .card-front p {
-    font-size: 11px;
-    color: #554466;
-    letter-spacing: 3px;
-    text-align: center;
-  }
-
-  /* Atrás de la carta */
   .card-back {
-    background: linear-gradient(135deg, #0d1a0d, #0a1a0a);
-    border: 1px solid #1a3a1a;
-    transform: rotateY(180deg);
-    text-align: center;
-    gap: 16px;
+    transform: rotateY(180deg); text-align: center; gap: 16px;
+    transition: background 0.4s, border-color 0.4s;
   }
+  .card-back.good    { background: linear-gradient(135deg, #0a1f00, #0d2200); border: 1px solid #1a4400; }
+  .card-back.bad     { background: linear-gradient(135deg, #1a0010, #0d0008); border: 1px solid #440022; }
+  .card-back.neutral { background: linear-gradient(135deg, #001a2e, #000d1a); border: 1px solid #003366; }
 
   .card-back .quote {
     font-family: 'Space Mono', monospace;
-    font-size: clamp(12px, 2.5vw, 15px);
-    line-height: 1.6;
-    color: var(--accent);
-    font-style: italic;
+    font-size: clamp(12px, 2.5vw, 14px);
+    line-height: 1.7; font-style: italic;
+    transition: color 0.4s;
   }
+  .card-back.good    .quote { color: var(--accent); }
+  .card-back.bad     .quote { color: var(--pink); }
+  .card-back.neutral .quote { color: var(--blue); }
+
+  .card-back .mood-icon { font-size: 28px; margin-bottom: 4px; }
 
   .card-back .song {
-    font-size: 10px;
-    color: #446644;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-top: 4px;
+    font-size: 10px; color: #446644; letter-spacing: 2px;
+    text-transform: uppercase; margin-top: 6px;
   }
+  .card-back.bad    .song { color: #664455; }
+  .card-back.neutral .song { color: #224466; }
+  .card-back .song span { color: var(--pink); }
 
-  .card-back .song span {
-    color: var(--pink);
-  }
-
-  /* Partículas / destellos */
-  .sparks {
-    position: fixed;
-    top: 0; left: 0;
+  /* Canvas overlay */
+  #fx-canvas {
+    position: fixed; top: 0; left: 0;
     width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 99;
+    pointer-events: none; z-index: 99;
   }
 
-  .spark {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    animation: spark-anim 1s ease-out forwards;
+  /* Floating emojis */
+  .float-emoji {
+    position: fixed; font-size: 28px; pointer-events: none; z-index: 100;
+    animation: floatUp 2.5s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(-200px) scale(0.5) rotate(30deg); }
   }
 
-  @keyframes spark-anim {
-    0%   { opacity: 1; transform: translate(0,0) scale(1); }
-    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+  /* Rain drops */
+  .raindrop {
+    position: fixed; width: 2px; border-radius: 2px;
+    pointer-events: none; z-index: 100;
+    animation: rainFall linear forwards;
+  }
+  @keyframes rainFall {
+    0%   { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(200px); }
   }
 
-  /* Hint */
-  .hint {
-    font-size: 11px;
-    color: #2a2a2a;
-    letter-spacing: 2px;
-    text-align: center;
-  }
-
-  .hint.visible {
-    color: var(--dim);
-  }
-
-  /* Shake animation */
+  /* Shake */
   @keyframes shake {
-    0%, 100% { transform: translateX(0) rotateY(0); }
-    25% { transform: translateX(-4px) rotateY(-3deg); }
-    75% { transform: translateX(4px) rotateY(3deg); }
+    0%,100%{transform:translateX(0) rotateY(0)}
+    25%{transform:translateX(-4px) rotateY(-3deg)}
+    75%{transform:translateX(4px) rotateY(3deg)}
   }
+  .card.shaking { animation: shake 0.4s ease-in-out; }
 
-  .card.shaking {
-    animation: shake 0.4s ease-in-out;
+  /* Mood indicator */
+  #mood-label {
+    font-size: 11px; letter-spacing: 3px; text-align: center;
+    min-height: 18px; transition: color 0.4s; opacity: 0;
+    transition: opacity 0.4s, color 0.4s;
   }
+  #mood-label.visible { opacity: 1; }
+  #mood-label.good    { color: var(--accent); }
+  #mood-label.bad     { color: var(--pink); }
+  #mood-label.neutral { color: var(--blue); }
 </style>
 </head>
 <body>
@@ -263,157 +202,332 @@
 
 <div class="input-section">
   <div class="input-label">¿Cuál es tu pregunta?</div>
-  <textarea id="question" placeholder="Escribe lo que tienes en mente..." maxlength="200"></textarea>
-  <button class="ask-btn" id="ask-btn" onclick="reveal()">Revelar mi destino</button>
+  <textarea id="question" placeholder="Escribe lo que tienes en mente..."></textarea>
+  <div class="btn-row">
+    <button class="ask-btn" id="ask-btn" onclick="reveal()">Revelar mi destino</button>
+    <button class="reset-btn" id="reset-btn" onclick="resetAll()">↺ Nueva pregunta</button>
+  </div>
 </div>
 
 <div class="card-scene">
-  <div class="card" id="card" onclick="flipBack()">
+  <div class="card" id="card">
     <div class="card-face card-front">
       <div class="card-front-inner">
         <div class="rabbit-emoji">🐰</div>
         <p>ESCRIBE TU PREGUNTA<br>Y PRESIONA EL BOTÓN</p>
       </div>
     </div>
-    <div class="card-face card-back">
+    <div class="card-face card-back" id="card-back">
+      <div class="mood-icon" id="mood-icon"></div>
       <div class="quote" id="quote-text"></div>
       <div class="song" id="song-text"></div>
     </div>
   </div>
 </div>
 
-<div class="hint" id="hint">· toca la carta para voltearla de nuevo ·</div>
+<div id="mood-label"></div>
 
-<canvas class="sparks" id="sparks"></canvas>
+<canvas id="fx-canvas"></canvas>
 
 <script>
-  const fortunes = [
-    { quote: "Yo hago lo que me da la gana,\ny eso no lo cambia nada.", song: "Yo Perreo Sola", album: "YHLQMDLG (2020)" },
-    { quote: "Sigo siendo el mismo,\npero diferente.", song: "Tití Me Preguntó", album: "Un Verano Sin Ti (2022)" },
-    { quote: "El dinero no es todo,\npero ayuda a olvidar.", song: "Dinero", album: "X 100PRE (2018)" },
-    { quote: "No me busques mañana\nsi no me valoras hoy.", song: "Si Veo a Tu Mamá", album: "YHLQMDLG (2020)" },
-    { quote: "Los que me criticaron\nson los que más me escuchan.", song: "Mía", album: "X 100PRE (2018)" },
-    { quote: "A veces hay que perderse\npara encontrarse.", song: "Otro Atardecer", album: "Un Verano Sin Ti (2022)" },
-    { quote: "El tiempo lo cura todo,\npero lo mío no tiene cura.", song: "Callaíta", album: "Single (2019)" },
-    { quote: "Pa' las que sean,\npa' las que no sean también.", song: "Tití Me Preguntó", album: "Un Verano Sin Ti (2022)" },
-    { quote: "Prefiero estar solo\nque mal acompañado.", song: "Solo de Mí", album: "X 100PRE (2018)" },
-    { quote: "La vida es una sola,\ngózatela mientras puedas.", song: "La Canción", album: "con J Balvin (2019)" },
-    { quote: "No importa lo que digan,\nyo sé quién soy.", song: "Dakiti", album: "con Jhay Cortez (2020)" },
-    { quote: "El que espera,\ndespera.", song: "Neverita", album: "Un Verano Sin Ti (2022)" },
-    { quote: "A veces el silencio\ndice más que mil palabras.", song: "Un Verano Sin Ti", album: "Un Verano Sin Ti (2022)" },
-    { quote: "Las cosas buenas\nnecesitan tiempo.", song: "Me Porto Bonito", album: "Un Verano Sin Ti (2022)" },
-    { quote: "No todo el que brilla\nes oro, mi amor.", song: "Ojitos Lindos", album: "Un Verano Sin Ti (2022)" },
-    { quote: "Confía en tu instinto,\nél nunca miente.", song: "Moscow Mule", album: "Un Verano Sin Ti (2022)" },
-    { quote: "El camino difícil\nes el que vale la pena.", song: "Yonaguni", album: "Single (2021)" },
-    { quote: "Haz lo tuyo\nsin mirar pa' atrás.", song: "Safaera", album: "YHLQMDLG (2020)" },
-    { quote: "Quien te quiera de verdad\nte buscará aunque te escondas.", song: "Bichiyal", album: "YHLQMDLG (2020)" },
-    { quote: "El que no arriesga\nno gana.", song: "Chambea", album: "con J Balvin · Oasis (2019)" },
-    { quote: "Algunas puertas se cierran\npara que encuentres la correcta.", song: "Andrea", album: "Un Verano Sin Ti (2022)" },
-    { quote: "Lo que es tuyo\nllega sin forzarlo.", song: "Después de la Playa", album: "Un Verano Sin Ti (2022)" },
-    { quote: "Rodéate de quien\nte sume, no de quien te reste.", song: "Yo Visto Así", album: "Nadie Sabe Lo Que Va a Pasar Mañana (2023)" },
-    { quote: "A veces lo mejor\nes simplemente soltar.", song: "Coco Chanel", album: "Nadie Sabe Lo Que Va a Pasar Mañana (2023)" },
-    { quote: "El mundo cambia,\nadáptate o quédate atrás.", song: "WHERE SHE GOES", album: "Single (2023)" },
-  ];
+// ─── FORTUNES ───────────────────────────────────────────────────────────────
+const fortunes = [
+  { quote:"Yo hago lo que me da la gana,\ny eso no lo cambia nada.", song:"Yo Perreo Sola", album:"YHLQMDLG (2020)", mood:"good" },
+  { quote:"Sigo siendo el mismo,\npero diferente.", song:"Tití Me Preguntó", album:"Un Verano Sin Ti (2022)", mood:"good" },
+  { quote:"El dinero no es todo,\npero ayuda a olvidar.", song:"Dinero", album:"X 100PRE (2018)", mood:"neutral" },
+  { quote:"No me busques mañana\nsi no me valoras hoy.", song:"Si Veo a Tu Mamá", album:"YHLQMDLG (2020)", mood:"bad" },
+  { quote:"Los que me criticaron\nson los que más me escuchan.", song:"Mía", album:"X 100PRE (2018)", mood:"good" },
+  { quote:"A veces hay que perderse\npara encontrarse.", song:"Otro Atardecer", album:"Un Verano Sin Ti (2022)", mood:"neutral" },
+  { quote:"El tiempo lo cura todo,\npero lo mío no tiene cura.", song:"Callaíta", album:"Single (2019)", mood:"bad" },
+  { quote:"Pa' las que sean,\npa' las que no sean también.", song:"Tití Me Preguntó", album:"Un Verano Sin Ti (2022)", mood:"good" },
+  { quote:"Prefiero estar solo\nque mal acompañado.", song:"Solo de Mí", album:"X 100PRE (2018)", mood:"neutral" },
+  { quote:"La vida es una sola,\ngózatela mientras puedas.", song:"La Canción", album:"con J Balvin (2019)", mood:"good" },
+  { quote:"No importa lo que digan,\nyo sé quién soy.", song:"Dakiti", album:"con Jhay Cortez (2020)", mood:"good" },
+  { quote:"El que espera,\ndespera.", song:"Neverita", album:"Un Verano Sin Ti (2022)", mood:"bad" },
+  { quote:"A veces el silencio\ndice más que mil palabras.", song:"Un Verano Sin Ti", album:"Un Verano Sin Ti (2022)", mood:"neutral" },
+  { quote:"Las cosas buenas\nnecesitan tiempo.", song:"Me Porto Bonito", album:"Un Verano Sin Ti (2022)", mood:"good" },
+  { quote:"No todo el que brilla\nes oro, mi amor.", song:"Ojitos Lindos", album:"Un Verano Sin Ti (2022)", mood:"neutral" },
+  { quote:"Confía en tu instinto,\nél nunca miente.", song:"Moscow Mule", album:"Un Verano Sin Ti (2022)", mood:"good" },
+  { quote:"El camino difícil\nes el que vale la pena.", song:"Yonaguni", album:"Single (2021)", mood:"good" },
+  { quote:"Haz lo tuyo\nsin mirar pa' atrás.", song:"Safaera", album:"YHLQMDLG (2020)", mood:"good" },
+  { quote:"Quien te quiera de verdad\nte buscará aunque te escondas.", song:"Bichiyal", album:"YHLQMDLG (2020)", mood:"good" },
+  { quote:"El que no arriesga\nno gana.", song:"Chambea", album:"Oasis con J Balvin (2019)", mood:"good" },
+  { quote:"Algunas puertas se cierran\npara que encuentres la correcta.", song:"Andrea", album:"Un Verano Sin Ti (2022)", mood:"neutral" },
+  { quote:"Lo que es tuyo\nllega sin forzarlo.", song:"Después de la Playa", album:"Un Verano Sin Ti (2022)", mood:"good" },
+  { quote:"Rodéate de quien\nte sume, no de quien te reste.", song:"Yo Visto Así", album:"Nadie Sabe… (2023)", mood:"good" },
+  { quote:"A veces lo mejor\nes simplemente soltar.", song:"Coco Chanel", album:"Nadie Sabe… (2023)", mood:"bad" },
+  { quote:"El mundo cambia,\nadáptate o quédate atrás.", song:"WHERE SHE GOES", album:"Single (2023)", mood:"neutral" },
+];
 
-  let lastIndex = -1;
-  let isFlipped = false;
+const MOOD_META = {
+  good:    { icon:"🎉", label:"✨ BUENA VIBRA ✨",    emojis:["🎉","⭐","🔥","💫","🏆","✨","🐰","💚"] },
+  bad:     { icon:"💔", label:"🌧️ TIEMPOS DIFÍCILES", emojis:["💔","🌧️","😔","🥀","😢","🌑","🫥"]  },
+  neutral: { icon:"🌊", label:"〰️ EL UNIVERSO HABLA", emojis:["🌊","🌙","🌀","💭","🔮","🐰","⚡"]  },
+};
 
-  function reveal() {
-    const q = document.getElementById('question').value.trim();
-    if (!q) {
-      document.getElementById('question').focus();
-      document.getElementById('question').style.borderColor = '#ff2d78';
-      setTimeout(() => document.getElementById('question').style.borderColor = '#2a2a2a', 1000);
-      return;
-    }
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let audioCtx = null;
+let lastIndex = -1;
+let isFlipped = false;
 
+// ─── AUDIO ───────────────────────────────────────────────────────────────────
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, dur, type='sine', vol=0.3, delay=0) {
+  const ctx = getCtx();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = type;
+  o.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+  g.gain.setValueAtTime(0, ctx.currentTime + delay);
+  g.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + dur);
+  o.start(ctx.currentTime + delay);
+  o.stop(ctx.currentTime + delay + dur + 0.05);
+}
+
+function soundVictory() {
+  // Fanfare ascendente
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((f, i) => playTone(f, 0.25, 'square', 0.18, i * 0.12));
+  setTimeout(() => {
+    [784, 880, 1047].forEach((f, i) => playTone(f, 0.4, 'triangle', 0.2, i * 0.1));
+  }, 600);
+}
+
+function soundDefeat() {
+  // Descenso lúgubre
+  const notes = [400, 330, 277, 220];
+  notes.forEach((f, i) => playTone(f, 0.4, 'sawtooth', 0.12, i * 0.18));
+  setTimeout(() => playTone(196, 0.8, 'sine', 0.15), 800);
+}
+
+function soundNeutral() {
+  // Acorde misterioso
+  [440, 554, 659].forEach((f, i) => playTone(f, 0.6, 'sine', 0.1, i * 0.08));
+  setTimeout(() => [523, 622, 740].forEach((f, i) => playTone(f, 0.5, 'triangle', 0.1, i * 0.07)), 500);
+}
+
+// ─── CANVAS FX ───────────────────────────────────────────────────────────────
+const canvas = document.getElementById('fx-canvas');
+const ctx2d = canvas.getContext('2d');
+let fxActive = false;
+
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function launchConfetti() {
+  resizeCanvas();
+  const colors = ['#c8ff00','#ff2d78','#ffffff','#aa88ff','#00cfff','#ffdd00'];
+  const particles = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10,
+    vx: (Math.random()-0.5)*4,
+    vy: Math.random()*4+2,
+    r: Math.random()*6+3,
+    color: colors[Math.floor(Math.random()*colors.length)],
+    rot: Math.random()*360,
+    spin: (Math.random()-0.5)*8,
+    life: 1,
+  }));
+  fxActive = true;
+
+  function draw() {
+    ctx2d.clearRect(0,0,canvas.width,canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.rot += p.spin; p.life -= 0.008;
+      ctx2d.save();
+      ctx2d.globalAlpha = p.life;
+      ctx2d.fillStyle = p.color;
+      ctx2d.translate(p.x, p.y);
+      ctx2d.rotate(p.rot * Math.PI/180);
+      ctx2d.fillRect(-p.r/2, -p.r/2, p.r, p.r*1.6);
+      ctx2d.restore();
+    });
+    if (alive) requestAnimationFrame(draw);
+    else { ctx2d.clearRect(0,0,canvas.width,canvas.height); fxActive = false; }
+  }
+  draw();
+}
+
+function launchRain() {
+  resizeCanvas();
+  const drops = Array.from({length: 60}, () => ({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height*0.5,
+    speed: Math.random()*4+3,
+    length: Math.random()*20+10,
+    life: 1,
+  }));
+  fxActive = true;
+
+  function draw() {
+    ctx2d.clearRect(0,0,canvas.width,canvas.height);
+    let alive = false;
+    drops.forEach(p => {
+      if (p.y > canvas.height + 30) return;
+      alive = true;
+      p.y += p.speed; p.life -= 0.005;
+      ctx2d.save();
+      ctx2d.globalAlpha = Math.max(0, p.life * 0.5);
+      ctx2d.strokeStyle = '#ff2d78';
+      ctx2d.lineWidth = 1.5;
+      ctx2d.beginPath();
+      ctx2d.moveTo(p.x, p.y);
+      ctx2d.lineTo(p.x+1, p.y+p.length);
+      ctx2d.stroke();
+      ctx2d.restore();
+    });
+    if (alive) requestAnimationFrame(draw);
+    else { ctx2d.clearRect(0,0,canvas.width,canvas.height); fxActive = false; }
+  }
+  draw();
+}
+
+function launchSparks() {
+  resizeCanvas();
+  const colors = ['#00cfff','#aa88ff','#ffffff','#c8ff00'];
+  const cx = canvas.width/2, cy = canvas.height/2;
+  const particles = Array.from({length:40}, () => ({
+    x: cx, y: cy,
+    vx: (Math.random()-0.5)*10,
+    vy: (Math.random()-0.5)*10,
+    r: Math.random()*4+2,
+    color: colors[Math.floor(Math.random()*colors.length)],
+    life: 1,
+  }));
+  fxActive = true;
+
+  function draw() {
+    ctx2d.clearRect(0,0,canvas.width,canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.022;
+      ctx2d.save();
+      ctx2d.globalAlpha = p.life;
+      ctx2d.fillStyle = p.color;
+      ctx2d.beginPath();
+      ctx2d.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx2d.fill();
+      ctx2d.restore();
+    });
+    if (alive) requestAnimationFrame(draw);
+    else { ctx2d.clearRect(0,0,canvas.width,canvas.height); fxActive = false; }
+  }
+  draw();
+}
+
+// ─── FLOATING EMOJIS ─────────────────────────────────────────────────────────
+function launchEmojis(emojis) {
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'float-emoji';
+      el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      el.style.left = (Math.random()*80+10) + 'vw';
+      el.style.bottom = (Math.random()*20+5) + 'vh';
+      el.style.animationDuration = (Math.random()*1.5+1.5) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i * 120);
+  }
+}
+
+// ─── REVEAL ──────────────────────────────────────────────────────────────────
+function reveal() {
+  const q = document.getElementById('question').value.trim();
+  if (!q) {
+    const ta = document.getElementById('question');
+    ta.style.borderColor = '#ff2d78';
+    ta.focus();
+    setTimeout(() => ta.style.borderColor = '#2a2a2a', 1000);
+    return;
+  }
+  if (isFlipped) {
     const card = document.getElementById('card');
-    if (isFlipped) {
-      // Shake para indicar que ya está revelada
-      card.classList.add('shaking');
-      setTimeout(() => card.classList.remove('shaking'), 400);
-      return;
-    }
-
-    // Seleccionar frase aleatoria (sin repetir la anterior)
-    let idx;
-    do { idx = Math.floor(Math.random() * fortunes.length); } while (idx === lastIndex);
-    lastIndex = idx;
-    const fortune = fortunes[idx];
-
-    document.getElementById('quote-text').textContent = `"${fortune.quote}"`;
-    document.getElementById('song-text').innerHTML = `<span>${fortune.song}</span> · ${fortune.album}`;
-
-    card.classList.add('flipped');
-    isFlipped = true;
-
-    document.getElementById('hint').classList.add('visible');
-    document.getElementById('ask-btn').disabled = true;
-
-    // Sparks
-    launchSparks();
+    card.classList.add('shaking');
+    setTimeout(() => card.classList.remove('shaking'), 400);
+    return;
   }
 
-  function flipBack() {
-    if (!isFlipped) return;
-    const card = document.getElementById('card');
-    card.classList.remove('flipped');
-    isFlipped = false;
-    document.getElementById('hint').classList.remove('visible');
+  // Elegir fortuna
+  let idx;
+  do { idx = Math.floor(Math.random()*fortunes.length); } while (idx === lastIndex);
+  lastIndex = idx;
+  const fortune = fortunes[idx];
+  const meta = MOOD_META[fortune.mood];
+
+  // Actualizar carta
+  const back = document.getElementById('card-back');
+  back.className = `card-face card-back ${fortune.mood}`;
+  document.getElementById('mood-icon').textContent = meta.icon;
+  document.getElementById('quote-text').textContent = `"${fortune.quote}"`;
+  document.getElementById('song-text').innerHTML = `<span>${fortune.song}</span> · ${fortune.album}`;
+
+  // Flip
+  document.getElementById('card').classList.add('flipped');
+  isFlipped = true;
+
+  // UI
+  document.getElementById('ask-btn').disabled = true;
+  document.getElementById('question').disabled = true;
+  document.getElementById('reset-btn').classList.add('visible');
+
+  // Body mood
+  document.body.className = `mood-${fortune.mood}`;
+
+  // Mood label
+  const ml = document.getElementById('mood-label');
+  ml.textContent = meta.label;
+  ml.className = `visible ${fortune.mood}`;
+
+  // FX con delay post-flip
+  setTimeout(() => {
+    if (fortune.mood === 'good')    { soundVictory(); launchConfetti(); launchEmojis(meta.emojis); }
+    else if (fortune.mood === 'bad') { soundDefeat();  launchRain();    launchEmojis(meta.emojis); }
+    else                             { soundNeutral(); launchSparks();  launchEmojis(meta.emojis); }
+  }, 700);
+}
+
+// ─── RESET ───────────────────────────────────────────────────────────────────
+function resetAll() {
+  const card = document.getElementById('card');
+  card.classList.remove('flipped');
+  isFlipped = false;
+
+  setTimeout(() => {
+    document.getElementById('question').value = '';
+    document.getElementById('question').disabled = false;
+    document.getElementById('question').focus();
     document.getElementById('ask-btn').disabled = false;
-  }
+    document.getElementById('reset-btn').classList.remove('visible');
+    document.getElementById('mood-label').className = '';
+    document.body.className = '';
 
-  function launchSparks() {
-    const canvas = document.getElementById('sparks');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const colors = ['#c8ff00', '#ff2d78', '#ffffff', '#aa88ff'];
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-
-    const particles = Array.from({ length: 40 }, () => ({
-      x: cx,
-      y: cy,
-      vx: (Math.random() - 0.5) * 12,
-      vy: (Math.random() - 0.5) * 12,
-      r: Math.random() * 4 + 2,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      life: 1,
-    }));
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let alive = false;
-      particles.forEach(p => {
-        if (p.life <= 0) return;
-        alive = true;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.3;
-        p.life -= 0.025;
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-      if (alive) requestAnimationFrame(draw);
-      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (fxActive) {
+      ctx2d.clearRect(0,0,canvas.width,canvas.height);
+      fxActive = false;
     }
+  }, 500);
+}
 
-    draw();
-  }
-
-  // Enter en textarea
-  document.getElementById('question').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      reveal();
-    }
-  });
+// Enter en textarea
+document.getElementById('question').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); reveal(); }
+});
 </script>
 </body>
 </html>
