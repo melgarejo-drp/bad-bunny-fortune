@@ -191,6 +191,45 @@
   #mood-label.good    { color: var(--accent); }
   #mood-label.bad     { color: var(--pink); }
   #mood-label.neutral { color: var(--blue); }
+
+  /* YouTube Player */
+  #yt-section {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 500px;
+    animation: fadeIn 0.5s ease forwards;
+  }
+  #yt-section.visible { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .yt-label {
+    font-size: 10px; color: var(--dim); letter-spacing: 3px; text-align: center;
+  }
+
+  #yt-frame-wrapper {
+    width: 100%; aspect-ratio: 16/9;
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid #222;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+
+  #yt-frame-wrapper iframe {
+    width: 100%; height: 100%; border: none; display: block;
+  }
+
+  .yt-open-btn {
+    font-size: 11px; color: var(--dim); letter-spacing: 2px;
+    text-decoration: none; border-bottom: 1px solid #333;
+    padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
+  }
+  .yt-open-btn:hover { color: var(--text); border-color: var(--text); }
 </style>
 </head>
 <body>
@@ -227,36 +266,48 @@
 
 <div id="mood-label"></div>
 
+<!-- YouTube Player -->
+<div id="yt-section">
+  <div class="yt-label">🎵 ESCUCHA LA CANCIÓN</div>
+  <div id="yt-frame-wrapper">
+    <iframe id="yt-frame" allowfullscreen
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+    </iframe>
+  </div>
+  <a id="yt-link" class="yt-open-btn" target="_blank" rel="noopener">▶ ABRIR EN YOUTUBE</a>
+</div>
+
 <canvas id="fx-canvas"></canvas>
 
 <script>
 // ─── FORTUNES ───────────────────────────────────────────────────────────────
+// yt: YouTube video ID | t: timestamp en segundos (ajustar manualmente a la letra exacta)
 const fortunes = [
-  { quote:"Soy solo de mí,\nde nadie más.", song:"Solo de Mí", album:"X 100PRE (2018)", mood:"good" },
-  { quote:"Estamos bien,\nsobreviví.", song:"Estamos Bien", album:"X 100PRE (2018)", mood:"good" },
-  { quote:"Vete,\nsi te quieres ir, vete.", song:"Vete", album:"El Último Tour Del Mundo (2020)", mood:"bad" },
-  { quote:"Yo perreo sola,\nyo perreo sola.", song:"Yo Perreo Sola", album:"YHLQMDLG (2020)", mood:"good" },
-  { quote:"Callaíta,\npero cuando llega la noche…", song:"Callaíta", album:"Single (2019)", mood:"neutral" },
-  { quote:"Esta noche tú serás mía,\nen la oscuridad yo te busqué.", song:"Dakiti", album:"con Jhay Cortez · EUTDM (2020)", mood:"good" },
-  { quote:"Si veo a tu mamá\nle pregunto por ti.", song:"Si Veo a Tu Mamá", album:"YHLQMDLG (2020)", mood:"neutral" },
-  { quote:"Te deseo lo mejor,\nque te vaya bien.", song:"Te Deseo Lo Mejor", album:"El Último Tour Del Mundo (2020)", mood:"bad" },
-  { quote:"Amorfoda,\nolvidarme es lo que más te conviene.", song:"Amorfoda", album:"X 100PRE (2018)", mood:"bad" },
-  { quote:"Tití me preguntó\nque si tenía novia.", song:"Tití Me Preguntó", album:"Un Verano Sin Ti (2022)", mood:"good" },
-  { quote:"Un verano sin ti\nno es un verano.", song:"El Apagón", album:"Un Verano Sin Ti (2022)", mood:"neutral" },
-  { quote:"Neverita,\ntú me tienes to' frío.", song:"Neverita", album:"Un Verano Sin Ti (2022)", mood:"bad" },
-  { quote:"Me porto bonito\ncontigo, ma.", song:"Me Porto Bonito", album:"Un Verano Sin Ti (2022)", mood:"good" },
-  { quote:"Después de la playa\nno hay nada mejor.", song:"Después de la Playa", album:"Un Verano Sin Ti (2022)", mood:"good" },
-  { quote:"Moscow Mule,\ntú me caes bien.", song:"Moscow Mule", album:"Un Verano Sin Ti (2022)", mood:"good" },
-  { quote:"Efecto,\ntú tienes un efecto en mí.", song:"Efecto", album:"Un Verano Sin Ti (2022)", mood:"neutral" },
-  { quote:"Bichiyal,\nla que sea mía tiene que ser especial.", song:"Bichiyal", album:"YHLQMDLG (2020)", mood:"good" },
-  { quote:"No me conocen,\npero me odian.", song:"Mía", album:"X 100PRE (2018)", mood:"bad" },
-  { quote:"Caro,\neso es lo que soy yo.", song:"Caro", album:"X 100PRE (2018)", mood:"good" },
-  { quote:"Pa' mí lo que tú sientes\nno es lo que tú dices.", song:"La Canción", album:"con J Balvin · Oasis (2019)", mood:"neutral" },
-  { quote:"Yonaguni,\nme perdí en ti.", song:"Yonaguni", album:"Single (2021)", mood:"neutral" },
-  { quote:"Andrea,\nno llores más.", song:"Andrea", album:"Un Verano Sin Ti (2022)", mood:"bad" },
-  { quote:"Where she goes,\nnobody knows.", song:"WHERE SHE GOES", album:"Single (2023)", mood:"neutral" },
-  { quote:"Un x100pre,\npara siempre.", song:"X 100PRE", album:"X 100PRE (2018)", mood:"good" },
-  { quote:"Ojitos lindos,\ncomo los de mi nena.", song:"Ojitos Lindos", album:"Un Verano Sin Ti (2022)", mood:"good" },
+  { quote:"Soy solo de mí,\nde nadie más.", song:"Solo de Mí", album:"X 100PRE (2018)", mood:"good",    yt:"7rbprAR_Reg", t:47  },
+  { quote:"Estamos bien,\nsobreviví.", song:"Estamos Bien", album:"X 100PRE (2018)", mood:"good",        yt:"bcHTl9h7TWI", t:38  },
+  { quote:"Vete,\nsi te quieres ir, vete.", song:"Vete", album:"El Último Tour Del Mundo (2020)", mood:"bad", yt:"f5aDUB1NCnk", t:42 },
+  { quote:"Yo perreo sola,\nyo perreo sola.", song:"Yo Perreo Sola", album:"YHLQMDLG (2020)", mood:"good", yt:"GtSRKwDCaZM", t:50 },
+  { quote:"Callaíta,\npero cuando llega la noche…", song:"Callaíta", album:"Single (2019)", mood:"neutral", yt:"acEOASYioGY", t:18 },
+  { quote:"Esta noche tú serás mía,\nen la oscuridad yo te busqué.", song:"Dakiti", album:"con Jhay Cortez · EUTDM (2020)", mood:"good", yt:"TmKh7lAwnBI", t:55 },
+  { quote:"Si veo a tu mamá\nle pregunto por ti.", song:"Si Veo a Tu Mamá", album:"YHLQMDLG (2020)", mood:"neutral", yt:"GtSRKwDCaZM", t:30 },
+  { quote:"Te deseo lo mejor,\nque te vaya bien.", song:"Te Deseo Lo Mejor", album:"El Último Tour Del Mundo (2020)", mood:"bad", yt:"ZK8YHDhxTEA", t:35 },
+  { quote:"Amorfoda,\nolvidarme es lo que más te conviene.", song:"Amorfoda", album:"X 100PRE (2018)", mood:"bad", yt:"kLpH1nSLJSs", t:44 },
+  { quote:"Tití me preguntó\nque si tenía novia.", song:"Tití Me Preguntó", album:"Un Verano Sin Ti (2022)", mood:"good", yt:"Cr8K88UcO0s", t:30 },
+  { quote:"Neverita,\ntú me tienes to' frío.", song:"Neverita", album:"Un Verano Sin Ti (2022)", mood:"bad", yt:"ARWg160eaX4", t:40 },
+  { quote:"Me porto bonito\ncontigo, ma.", song:"Me Porto Bonito", album:"Un Verano Sin Ti (2022)", mood:"good", yt:"saGYMhApaH8", t:45 },
+  { quote:"Moscow Mule,\ntú me caes bien.", song:"Moscow Mule", album:"Un Verano Sin Ti (2022)", mood:"good", yt:"p38WgakuYDo", t:50 },
+  { quote:"Efecto,\ntú tienes un efecto en mí.", song:"Efecto", album:"Un Verano Sin Ti (2022)", mood:"neutral", yt:"Nk8C9FdCdJQ", t:35 },
+  { quote:"Bichiyal,\nla que sea mía tiene que ser especial.", song:"Bichiyal", album:"YHLQMDLG (2020)", mood:"good", yt:"Udxl17LVHYA", t:38 },
+  { quote:"No me conocen,\npero me odian.", song:"Mía", album:"con Drake · X 100PRE (2018)", mood:"bad", yt:"OSUxrSe5GbI", t:28 },
+  { quote:"Caro,\neso es lo que soy yo.", song:"Caro", album:"X 100PRE (2018)", mood:"good", yt:"bg64AFnRnkc", t:40 },
+  { quote:"Yonaguni,\nme perdí en ti.", song:"Yonaguni", album:"Single (2021)", mood:"neutral", yt:"doLMt10ytHY", t:30 },
+  { quote:"Andrea,\nno llores más.", song:"Andrea", album:"Un Verano Sin Ti (2022)", mood:"bad", yt:"gjvTQTGogUM", t:35 },
+  { quote:"Where she goes,\nnobody knows.", song:"WHERE SHE GOES", album:"Single (2023)", mood:"neutral", yt:"bef8QLNHubw", t:25 },
+  { quote:"Ojitos lindos,\ncomo los de mi nena.", song:"Ojitos Lindos", album:"con Bomba Estéreo · UVST (2022)", mood:"good", yt:"wAjHQXrIj9o", t:40 },
+  { quote:"Amorfoda,\nolvidarme es lo que más te conviene.", song:"Amorfoda", album:"X 100PRE (2018)", mood:"bad", yt:"kLpH1nSLJSs", t:44 },
+  { quote:"Esta noche tú serás mía,\nen la oscuridad yo te busqué.", song:"Dakiti", album:"con Jhay Cortez (2020)", mood:"good", yt:"TmKh7lAwnBI", t:55 },
+  { quote:"Soy solo de mí,\nde nadie más.", song:"Solo de Mí", album:"X 100PRE (2018)", mood:"good", yt:"7rbprAR_Reg", t:47 },
+  { quote:"Vete,\nsi te quieres ir, vete.", song:"Vete", album:"El Último Tour Del Mundo (2020)", mood:"bad", yt:"f5aDUB1NCnk", t:42 },
 ];
 
 const MOOD_META = {
@@ -496,10 +547,20 @@ function reveal() {
 
   // FX con delay post-flip
   setTimeout(() => {
-    if (fortune.mood === 'good')    { soundVictory(); launchConfetti(); launchEmojis(meta.emojis); }
+    if (fortune.mood === 'good')     { soundVictory(); launchConfetti(); launchEmojis(meta.emojis); }
     else if (fortune.mood === 'bad') { soundDefeat();  launchRain();    launchEmojis(meta.emojis); }
     else                             { soundNeutral(); launchSparks();  launchEmojis(meta.emojis); }
-  }, 700);
+
+    // YouTube embed
+    const ytSection = document.getElementById('yt-section');
+    const ytFrame   = document.getElementById('yt-frame');
+    const ytLink    = document.getElementById('yt-link');
+    const ytUrl     = `https://www.youtube.com/embed/${fortune.yt}?start=${fortune.t}&autoplay=1&rel=0`;
+    const ytExtUrl  = `https://www.youtube.com/watch?v=${fortune.yt}&t=${fortune.t}s`;
+    ytFrame.src = ytUrl;
+    ytLink.href = ytExtUrl;
+    ytSection.classList.add('visible');
+  }, 900);
 }
 
 // ─── RESET ───────────────────────────────────────────────────────────────────
@@ -516,6 +577,11 @@ function resetAll() {
     document.getElementById('reset-btn').classList.remove('visible');
     document.getElementById('mood-label').className = '';
     document.body.className = '';
+
+    // Limpiar YouTube
+    const ytSection = document.getElementById('yt-section');
+    document.getElementById('yt-frame').src = '';
+    ytSection.classList.remove('visible');
 
     if (fxActive) {
       ctx2d.clearRect(0,0,canvas.width,canvas.height);
