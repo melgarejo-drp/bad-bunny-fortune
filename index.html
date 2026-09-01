@@ -230,6 +230,30 @@
     padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
   }
   .yt-open-btn:hover { color: var(--text); border-color: var(--text); }
+
+  .share-btn {
+    background: transparent; color: var(--dim);
+    border: 1px solid #333; border-radius: 6px; font-family: 'Space Mono', monospace;
+    font-size: 11px; padding: 10px 20px; cursor: pointer;
+    letter-spacing: 2px; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .share-btn:hover { border-color: var(--text); color: var(--text); }
+  .share-btn.copied { border-color: var(--accent); color: var(--accent); }
+
+  .card.thinking { animation: pulse 0.55s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  @media (max-width: 380px) {
+    .card-scene { width: 92vw; }
+    .card-face { padding: 20px; }
+  }
 </style>
 </head>
 <body>
@@ -240,8 +264,8 @@
 </div>
 
 <div class="input-section">
-  <div class="input-label">¿Cuál es tu pregunta?</div>
-  <textarea id="question" placeholder="Escribe lo que tienes en mente..."></textarea>
+  <label class="input-label" for="question">¿Cuál es tu pregunta?</label>
+  <textarea id="question" placeholder="Escribe lo que tienes en mente..." aria-describedby="mood-label"></textarea>
   <div class="btn-row">
     <button class="ask-btn" id="ask-btn" onclick="reveal()">Revelar mi destino</button>
     <button class="reset-btn" id="reset-btn" onclick="resetAll()">↺ Nueva pregunta</button>
@@ -264,51 +288,107 @@
   </div>
 </div>
 
-<div id="mood-label"></div>
+<div id="mood-label" aria-live="polite"></div>
+<div id="sr-announce" class="sr-only" aria-live="polite"></div>
 
 <!-- YouTube Player -->
 <div id="yt-section">
   <div class="yt-label">🎵 ESCUCHA LA CANCIÓN</div>
   <div id="yt-frame-wrapper">
-    <iframe id="yt-frame" allowfullscreen
+    <iframe id="yt-frame" allowfullscreen title="Reproductor de YouTube"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
     </iframe>
   </div>
-  <a id="yt-link" class="yt-open-btn" target="_blank" rel="noopener">▶ ABRIR EN YOUTUBE</a>
+  <div class="btn-row">
+    <a id="yt-link" class="yt-open-btn" target="_blank" rel="noopener">▶ ABRIR EN YOUTUBE</a>
+    <button class="share-btn" id="share-btn" onclick="shareFortune()">⤴ Compartir</button>
+  </div>
 </div>
 
 <canvas id="fx-canvas"></canvas>
 
 <script>
 // ─── FORTUNES ───────────────────────────────────────────────────────────────
-// yt: YouTube video ID | t: timestamp en segundos (ajustar manualmente a la letra exacta)
+// yt: YouTube video ID (verificado contra el video oficial) | t: timestamp aproximado en segundos
 const fortunes = [
-  { quote:"Soy solo de mí,\nde nadie más.", song:"Solo de Mí", album:"X 100PRE (2018)", mood:"good",    yt:"7rbprAR_Reg", t:47  },
-  { quote:"Estamos bien,\nsobreviví.", song:"Estamos Bien", album:"X 100PRE (2018)", mood:"good",        yt:"bcHTl9h7TWI", t:38  },
-  { quote:"Vete,\nsi te quieres ir, vete.", song:"Vete", album:"El Último Tour Del Mundo (2020)", mood:"bad", yt:"f5aDUB1NCnk", t:42 },
+  { quote:"Soy solo de mí,\nde nadie más.", song:"Solo de Mí", album:"X 100PRE (2018)", mood:"good", yt:"7rbprAR_Reg", t:47 },
+  { quote:"Estamos bien,\nyo sobreviví.", song:"Estamos Bien", album:"X 100PRE (2018)", mood:"good", yt:"bcHTl9h7TWI", t:38 },
+  { quote:"Vete,\nsi te quieres ir, vete.", song:"Vete", album:"YHLQMDLG (2020)", mood:"bad", yt:"f5aDUB1NCnk", t:42 },
   { quote:"Yo perreo sola,\nyo perreo sola.", song:"Yo Perreo Sola", album:"YHLQMDLG (2020)", mood:"good", yt:"GtSRKwDCaZM", t:50 },
-  { quote:"Callaíta,\npero cuando llega la noche…", song:"Callaíta", album:"Single (2019)", mood:"neutral", yt:"acEOASYioGY", t:18 },
-  { quote:"Esta noche tú serás mía,\nen la oscuridad yo te busqué.", song:"Dakiti", album:"con Jhay Cortez · EUTDM (2020)", mood:"good", yt:"TmKh7lAwnBI", t:55 },
-  { quote:"Si veo a tu mamá\nle pregunto por ti.", song:"Si Veo a Tu Mamá", album:"YHLQMDLG (2020)", mood:"neutral", yt:"GtSRKwDCaZM", t:30 },
-  { quote:"Te deseo lo mejor,\nque te vaya bien.", song:"Te Deseo Lo Mejor", album:"El Último Tour Del Mundo (2020)", mood:"bad", yt:"ZK8YHDhxTEA", t:35 },
+  { quote:"Ella es callaíta,\npero pa'l sexo es atrevida.", song:"Callaíta", album:"con Tainy · Single (2019)", mood:"neutral", yt:"acEOASYioGY", t:18 },
+  { quote:"Baby, ya yo me enteré,\nse nota cuando me ve'.", song:"Dakiti", album:"con Jhay Cortez · EUTDM (2020)", mood:"good", yt:"TmKh7lAwnBI", t:55 },
+  { quote:"Si veo a tu mamá\nle pregunto por ti.", song:"Si Veo a Tu Mamá", album:"YHLQMDLG (2020)", mood:"neutral", yt:"CPK_IdHe1Yg", t:30 },
+  { quote:"Te deseo lo mejor,\nque te vaya bien.", song:"Te Deseo Lo Mejor", album:"El Último Tour Del Mundo (2020)", mood:"bad", yt:"FwZ3ZpfjSO8", t:35 },
   { quote:"Amorfoda,\nolvidarme es lo que más te conviene.", song:"Amorfoda", album:"X 100PRE (2018)", mood:"bad", yt:"kLpH1nSLJSs", t:44 },
   { quote:"Tití me preguntó\nque si tenía novia.", song:"Tití Me Preguntó", album:"Un Verano Sin Ti (2022)", mood:"good", yt:"Cr8K88UcO0s", t:30 },
   { quote:"Neverita,\ntú me tienes to' frío.", song:"Neverita", album:"Un Verano Sin Ti (2022)", mood:"bad", yt:"ARWg160eaX4", t:40 },
-  { quote:"Me porto bonito\ncontigo, ma.", song:"Me Porto Bonito", album:"Un Verano Sin Ti (2022)", mood:"good", yt:"saGYMhApaH8", t:45 },
-  { quote:"Moscow Mule,\ntú me caes bien.", song:"Moscow Mule", album:"Un Verano Sin Ti (2022)", mood:"good", yt:"p38WgakuYDo", t:50 },
-  { quote:"Efecto,\ntú tienes un efecto en mí.", song:"Efecto", album:"Un Verano Sin Ti (2022)", mood:"neutral", yt:"Nk8C9FdCdJQ", t:35 },
-  { quote:"Bichiyal,\nla que sea mía tiene que ser especial.", song:"Bichiyal", album:"YHLQMDLG (2020)", mood:"good", yt:"Udxl17LVHYA", t:38 },
-  { quote:"No me conocen,\npero me odian.", song:"Mía", album:"con Drake · X 100PRE (2018)", mood:"bad", yt:"OSUxrSe5GbI", t:28 },
+  { quote:"Si tú me lo pides,\nyo me porto bonito.", song:"Me Porto Bonito", album:"con Chencho Corleone · UVST (2022)", mood:"good", yt:"saGYMhApaH8", t:45 },
+  { quote:"Tú no ere' bebecita,\ntú ere' bebesota.", song:"Me Porto Bonito", album:"con Chencho Corleone · UVST (2022)", mood:"good", yt:"saGYMhApaH8", t:78 },
+  { quote:"Mami, tú quiere' perreo,\ntú quiere' perreo.", song:"Moscow Mule", album:"Un Verano Sin Ti (2022)", mood:"good", yt:"p38WgakuYDo", t:50 },
+  { quote:"Efecto,\ntú tienes un efecto en mí.", song:"Efecto", album:"Un Verano Sin Ti (2022)", mood:"neutral", yt:"IxM-Repiyng", t:35 },
+  { quote:"Bichiyal,\nla que sea mía tiene que ser especial.", song:"Bichiyal", album:"con Yaviah · YHLQMDLG (2020)", mood:"good", yt:"Udxl17LVHYA", t:38 },
+  { quote:"Dile que tú eres mía,\ntú sabes que eres mía.", song:"Mía", album:"con Drake · X 100PRE (2018)", mood:"good", yt:"OSUxrSe5GbI", t:28 },
   { quote:"Caro,\neso es lo que soy yo.", song:"Caro", album:"X 100PRE (2018)", mood:"good", yt:"bg64AFnRnkc", t:40 },
   { quote:"Yonaguni,\nme perdí en ti.", song:"Yonaguni", album:"Single (2021)", mood:"neutral", yt:"doLMt10ytHY", t:30 },
-  { quote:"Andrea,\nno llores más.", song:"Andrea", album:"Un Verano Sin Ti (2022)", mood:"bad", yt:"gjvTQTGogUM", t:35 },
+  { quote:"Andrea,\nno llores más.", song:"Andrea", album:"con Buscabulla · UVST (2022)", mood:"bad", yt:"ZouuNq9WaaA", t:35 },
   { quote:"Where she goes,\nnobody knows.", song:"WHERE SHE GOES", album:"Single (2023)", mood:"neutral", yt:"bef8QLNHubw", t:25 },
-  { quote:"Ojitos lindos,\ncomo los de mi nena.", song:"Ojitos Lindos", album:"con Bomba Estéreo · UVST (2022)", mood:"good", yt:"wAjHQXrIj9o", t:40 },
-  { quote:"Amorfoda,\nolvidarme es lo que más te conviene.", song:"Amorfoda", album:"X 100PRE (2018)", mood:"bad", yt:"kLpH1nSLJSs", t:44 },
-  { quote:"Esta noche tú serás mía,\nen la oscuridad yo te busqué.", song:"Dakiti", album:"con Jhay Cortez (2020)", mood:"good", yt:"TmKh7lAwnBI", t:55 },
-  { quote:"Soy solo de mí,\nde nadie más.", song:"Solo de Mí", album:"X 100PRE (2018)", mood:"good", yt:"7rbprAR_Reg", t:47 },
-  { quote:"Vete,\nsi te quieres ir, vete.", song:"Vete", album:"El Último Tour Del Mundo (2020)", mood:"bad", yt:"f5aDUB1NCnk", t:42 },
+  { quote:"Ojitos lindos,\ncomo los de mi nena.", song:"Ojitos Lindos", album:"con Bomba Estéreo · UVST (2022)", mood:"good", yt:"Uk-1uC_kTGQ", t:40 },
+  { quote:"Ustede' hablando mierda,\ny yo y lo' mío' por Mónaco.", song:"Mónaco", album:"nadie sabe lo que va a pasar mañana (2023)", mood:"neutral", yt:"_PJvpq8uOZM", t:40 },
+  { quote:"Gracias, mami,\npor parirme aquí.", song:"La Mudanza", album:"DeBÍ TiRAR MáS FOToS (2025)", mood:"good", yt:"tsCW4jEe5jY", t:20 },
+  { quote:"En mi vida fuiste turista,\ntú solo viste lo mejor de mí.", song:"Turista", album:"DeBÍ TiRAR MáS FOToS (2025)", mood:"bad", yt:"H7-7TXXnw8I", t:45 },
+  { quote:"No, no te puedo olvidar,\nno te puedo borrar.", song:"Baile Inolvidable", album:"DeBÍ TiRAR MáS FOToS (2025)", mood:"bad", yt:"7pU6u5nqCN0", t:50 },
 ];
+
+// ─── PREDICCIÓN "INTELIGENTE" ────────────────────────────────────────────────
+// El conejo no lee mentes, pero sí lee tu pregunta: pondera el mood según
+// palabras clave (sentimiento) sin dejar de ser un juego de azar real.
+const MOOD_KEYWORDS = {
+  bad: ["triste","tristeza","dolor","duele","doler","llorar","llore","lloro","extrano","extrana","perdi","perder","romper","ruptura","sola","solo","adios","despedida","rabia","enojo","enojada","enojado","mal","fatal","depre","miedo","preocupa","deuda","termine","termino","odia","sufrir","sufro","ex "],
+  good: ["feliz","felicidad","amor","enamor","gusta","fiesta","celebrar","exito","logre","logro","bien","mejor","ganar","gane","ilusion","emocion","boda","cumpleanos","viaje","vacaciones","alegr"],
+  neutral: ["duda","dudo","no se","incierto","futuro","destino","suerte","cuando","sera","pasara","pregunta","decision","elegir","deberia"],
+};
+
+function normalize(str) {
+  return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function scoreMoods(question) {
+  const q = normalize(question);
+  const scores = { good: 0, bad: 0, neutral: 0 };
+  for (const mood in MOOD_KEYWORDS) {
+    for (const kw of MOOD_KEYWORDS[mood]) {
+      if (q.includes(kw)) scores[mood]++;
+    }
+  }
+  return scores;
+}
+
+function pickFortune(question) {
+  const scores = scoreMoods(question);
+  const totalScore = scores.good + scores.bad + scores.neutral;
+
+  // Peso por mood: sin pistas en la pregunta, todo es 100% azar.
+  // Con pistas, el mood detectado pesa más, pero los demás siguen siendo posibles.
+  const weight = { good: 1, bad: 1, neutral: 1 };
+  if (totalScore > 0) {
+    for (const mood in weight) weight[mood] += scores[mood] * 3;
+  }
+
+  let pool = fortunes;
+  // Evita repetir la misma canción dos veces seguidas si hay alternativas.
+  if (lastSong) {
+    const filtered = fortunes.filter(f => f.song !== lastSong);
+    if (filtered.length) pool = filtered;
+  }
+
+  const totalWeight = pool.reduce((sum, f) => sum + weight[f.mood], 0);
+  let roll = Math.random() * totalWeight;
+  for (const f of pool) {
+    roll -= weight[f.mood];
+    if (roll <= 0) return f;
+  }
+  return pool[pool.length - 1];
+}
 
 const MOOD_META = {
   good:    { icon:"🎉", label:"✨ BUENA VIBRA ✨",    emojis:["🎉","⭐","🔥","💫","🏆","✨","🐰","💚"] },
@@ -318,8 +398,10 @@ const MOOD_META = {
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let audioCtx = null;
-let lastIndex = -1;
+let lastSong = null;
 let isFlipped = false;
+let isThinking = false;
+const ASK_BTN_DEFAULT_LABEL = "Revelar mi destino";
 
 // ─── AUDIO ───────────────────────────────────────────────────────────────────
 function getCtx() {
@@ -513,13 +595,28 @@ function reveal() {
     setTimeout(() => card.classList.remove('shaking'), 400);
     return;
   }
+  if (isThinking) return;
+  isThinking = true;
 
-  // Elegir fortuna
-  let idx;
-  do { idx = Math.floor(Math.random()*fortunes.length); } while (idx === lastIndex);
-  lastIndex = idx;
-  const fortune = fortunes[idx];
+  // Pequeña pausa de "consulta" para dar sensación de que el conejo procesó la pregunta
+  const askBtn = document.getElementById('ask-btn');
+  const card = document.getElementById('card');
+  askBtn.disabled = true;
+  askBtn.textContent = 'Consultando al conejo…';
+  card.classList.add('thinking');
+
+  setTimeout(() => {
+    card.classList.remove('thinking');
+    revealFortune(q);
+  }, 650);
+}
+
+function revealFortune(question) {
+  const fortune = pickFortune(question);
+  lastSong = fortune.song;
   const meta = MOOD_META[fortune.mood];
+
+  document.getElementById('ask-btn').textContent = ASK_BTN_DEFAULT_LABEL;
 
   // Actualizar carta
   const back = document.getElementById('card-back');
@@ -533,7 +630,6 @@ function reveal() {
   isFlipped = true;
 
   // UI
-  document.getElementById('ask-btn').disabled = true;
   document.getElementById('question').disabled = true;
   document.getElementById('reset-btn').classList.add('visible');
 
@@ -544,6 +640,10 @@ function reveal() {
   const ml = document.getElementById('mood-label');
   ml.textContent = meta.label;
   ml.className = `visible ${fortune.mood}`;
+
+  // Anuncio para lectores de pantalla
+  document.getElementById('sr-announce').textContent =
+    `${meta.label}. "${fortune.quote.replace(/\n/g, ' ')}" — ${fortune.song}, ${fortune.album}.`;
 
   // FX con delay post-flip
   setTimeout(() => {
@@ -560,7 +660,44 @@ function reveal() {
     ytFrame.src = ytUrl;
     ytLink.href = ytExtUrl;
     ytSection.classList.add('visible');
+
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn.classList.remove('copied');
+    shareBtn.textContent = '⤴ Compartir';
+    shareBtn.dataset.text =
+      `"${fortune.quote.replace(/\n/g, ' ')}" — ${fortune.song} (Bad Bunny) 🐰\n${ytExtUrl}`;
   }, 900);
+
+  isThinking = false;
+}
+
+// ─── COMPARTIR ───────────────────────────────────────────────────────────────
+async function shareFortune() {
+  const shareBtn = document.getElementById('share-btn');
+  const text = shareBtn.dataset.text || '';
+  if (!text) return;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ text });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+      // si falla el share nativo, caemos al portapapeles
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    shareBtn.textContent = '✓ Copiado';
+    shareBtn.classList.add('copied');
+    setTimeout(() => {
+      shareBtn.textContent = '⤴ Compartir';
+      shareBtn.classList.remove('copied');
+    }, 1800);
+  } catch (err) {
+    shareBtn.textContent = 'No se pudo copiar';
+  }
 }
 
 // ─── RESET ───────────────────────────────────────────────────────────────────
@@ -568,14 +705,18 @@ function resetAll() {
   const card = document.getElementById('card');
   card.classList.remove('flipped');
   isFlipped = false;
+  isThinking = false;
 
   setTimeout(() => {
     document.getElementById('question').value = '';
     document.getElementById('question').disabled = false;
     document.getElementById('question').focus();
-    document.getElementById('ask-btn').disabled = false;
+    const askBtn = document.getElementById('ask-btn');
+    askBtn.disabled = false;
+    askBtn.textContent = ASK_BTN_DEFAULT_LABEL;
     document.getElementById('reset-btn').classList.remove('visible');
     document.getElementById('mood-label').className = '';
+    document.getElementById('sr-announce').textContent = '';
     document.body.className = '';
 
     // Limpiar YouTube
